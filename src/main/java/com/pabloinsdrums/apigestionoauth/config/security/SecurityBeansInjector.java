@@ -12,30 +12,14 @@ import org.springframework.security.config.annotation.authentication.configurati
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.oauth2.server.authorization.client.RegisteredClient;
+import org.springframework.security.oauth2.server.authorization.client.RegisteredClientRepository;
 
 @Configuration
 public class SecurityBeansInjector {
 
     @Autowired
     private UserRepository userRepository;
-
-    @Bean
-    public AuthenticationManager authenticationManager(AuthenticationConfiguration authenticationConfiguration) {
-        try {
-            return authenticationConfiguration.getAuthenticationManager();
-        }  catch (Exception e) {
-            throw new RuntimeException(e);
-        }
-    }
-
-    @Bean
-    public AuthenticationProvider authenticationProvider() {
-        DaoAuthenticationProvider authenticationStrategy = new DaoAuthenticationProvider();
-        authenticationStrategy.setPasswordEncoder( passwordEncoder() );
-        authenticationStrategy.setUserDetailsService( userDetailsService() );
-
-        return authenticationStrategy;
-    }
 
     @Bean
     public PasswordEncoder passwordEncoder() {
