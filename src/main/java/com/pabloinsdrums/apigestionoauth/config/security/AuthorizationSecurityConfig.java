@@ -6,6 +6,7 @@ import com.nimbusds.jose.jwk.source.ImmutableJWKSet;
 import com.nimbusds.jose.jwk.source.JWKSource;
 import com.nimbusds.jose.proc.SecurityContext;
 import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
 import org.springframework.core.annotation.Order;
 import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -25,47 +26,42 @@ import java.security.interfaces.RSAPublicKey;
 import java.util.UUID;
 
 @EnableWebSecurity
-//@Component
+@Configuration
 public class AuthorizationSecurityConfig {
 
     @Bean
     @Order(1)
-    public SecurityFilterChain authorizationServerSecurityFilterChain(HttpSecurity http) {
-        try{
-            OAuth2AuthorizationServerConfiguration.applyDefaultSecurity(http);
+    public SecurityFilterChain authorizationServerSecurityFilterChain(HttpSecurity http) throws Exception {
+        OAuth2AuthorizationServerConfiguration.applyDefaultSecurity(http);
 
-            http.getConfigurer(OAuth2AuthorizationServerConfigurer.class)
-                    .oidc(Customizer.withDefaults());
+        http.getConfigurer(OAuth2AuthorizationServerConfigurer.class)
+                .oidc(Customizer.withDefaults());
 
-            http.exceptionHandling(exceptionConfig -> {
-                exceptionConfig.authenticationEntryPoint(new LoginUrlAuthenticationEntryPoint("/login"));
-            });
+        http.exceptionHandling(exceptionConfig -> {
+            exceptionConfig.authenticationEntryPoint(new LoginUrlAuthenticationEntryPoint("/login"));
+        });
 
-            http.oauth2ResourceServer(oauthResourceServerConfig -> {
-               oauthResourceServerConfig.jwt(Customizer.withDefaults());
-            });
+        http.oauth2ResourceServer(oauthResourceServerConfig -> {
+           oauthResourceServerConfig.jwt(Customizer.withDefaults());
+        });
 
-            return http.build();
-        } catch (Exception e) {
-            throw new RuntimeException("Error in authorizationServerSecurityFilterChain "+ e);
-        }
+        return http.build();
     }
 
     @Bean
     @Order(2)
-    public SecurityFilterChain webSecurityFilterChain(HttpSecurity http) {
-        try{
-            http
-                    .authorizeHttpRequests(authConfig -> {
-                        authConfig.requestMatchers("/login").permitAll();
-                        authConfig.anyRequest().authenticated();
-                    })
-                    .formLogin(Customizer.withDefaults());
+    public SecurityFilterChain webSecurityFilterChain(HttpSecurity http) throws Exception {
+        http
+                .authorizeHttpRequests(authConfig -> {
+                    authConfig.requestMatchers("/login").permitAll();
+                    authConfig.anyRequest().authenticated();
+                })
+//                .formLogin(Customizer.withDefaults());
+                .formLogin(formLoginConfig -> {
+                    formLoginConfig.loginPage("/login").permitAll();
+                });
 
-            return http.build();
-        } catch (Exception e) {
-            throw new RuntimeException("Error in webSecurityFilterChain "+ e);
-        }
+        return http.build();
     }
 
     @Bean

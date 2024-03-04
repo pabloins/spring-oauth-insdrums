@@ -9,6 +9,7 @@ import org.springframework.security.oauth2.server.authorization.settings.TokenSe
 
 import java.time.Duration;
 import java.util.Date;
+import java.util.stream.Collectors;
 
 public class ClientAppMapper {
 
@@ -19,17 +20,17 @@ public class ClientAppMapper {
                 .clientIdIssuedAt(new Date(System.currentTimeMillis()).toInstant())
                 .clientAuthenticationMethods(clientAuthenticationMethods -> {
                     clientApp.getClientAuthenticationMethods().stream()
-                            .map(ClientAuthenticationMethod::new)
+                            .map(method -> new ClientAuthenticationMethod(method))
                             .forEach(clientAuthenticationMethods::add);
                 })
                 .authorizationGrantTypes(authorizationGrantTypes -> {
                     clientApp.getAuthorizationGrantTypes().stream()
-                            .map(AuthorizationGrantType::new)
+                            .map(grantTypes ->  new AuthorizationGrantType(grantTypes))
                             .forEach(authorizationGrantTypes::add);
                 })
                 .redirectUris(redirectUris ->
-                        redirectUris.addAll(clientApp.getRedirectUris()))
-                .scopes(scopes -> scopes.addAll(clientApp.getScopes()))
+                        clientApp.getRedirectUris().stream().forEach(redirectUris::add))
+                .scopes(scopes -> clientApp.getScopes().stream().forEach(scopes::add))
                 .tokenSettings(TokenSettings.builder()
                         .accessTokenTimeToLive(Duration.ofMinutes(clientApp.getDurationInMinutes()))
                         .refreshTokenTimeToLive(Duration.ofMinutes(clientApp.getDurationInMinutes() * 4))
